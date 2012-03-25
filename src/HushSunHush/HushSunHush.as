@@ -33,13 +33,17 @@ package HushSunHush
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Shape;
+		private var debugTextS:Sprite;
+		private var debugText:TextField;
 		
 		public static const MARGIN:Number = 20;
 		public static const FPS:Number = 30;
 		public static const SECPERFRAME:Number = 6;
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
-		public static const SILENCE_CUTOFF:Number = 0.5;
+		
+		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
+		public static const SILENCE_CUTOFF:Number = 6.25/1024.0;
 		
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
 		private var mic:Microphone;
@@ -47,6 +51,23 @@ package HushSunHush
 		
 		public function HushSunHush()
 		{
+			debugTextS = new Sprite();
+			addChild(debugTextS);
+			debugText = new TextField();
+			debugText.autoSize = TextFieldAutoSize.LEFT;
+			debugText.background = false;
+			debugText.border = true;
+			
+			var format:TextFormat = new TextFormat();
+			format.font = "Verdana";
+			format.color = 0xFFFFFF;
+			format.size = 10;
+			format.underline = true;
+			debugText.defaultTextFormat = format;
+			
+			debugTextS.addChild(debugText);
+			debugText.text = "Hello, world";
+			
 			planet = new Shape();
 			planet.graphics.beginFill(0x00aa00,0.5);
 			planet.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
@@ -129,18 +150,22 @@ package HushSunHush
 			
 			var total:Number = 0;
 			
-			// Read the input data and stuff it into 
-			// the circular buffer
+			// Read the input data
 			for ( var i:uint = 0; i < len; i++ )
 			{
-				total += event.data.readFloat();
+				total += Math.abs(event.data.readFloat());
 			}
+			
 			total = total/len;
+						
 			if(total > SILENCE_CUTOFF){
 				//We hear something. If no current note, create one.
+				/* TODO: Remove debug text */
+				debugText.text = "SOUNDS";
 				start_note();
 			} else {
 				//We hear nothing. If there is a current note, end it.
+				debugText.text = "SILENT";
 				end_note();
 			}
 		}
