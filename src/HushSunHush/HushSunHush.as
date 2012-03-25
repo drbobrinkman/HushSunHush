@@ -44,7 +44,8 @@ package HushSunHush
 		public static const MARGIN:Number = 20;
 		public static const FPS:Number = 30;
 		public static const SECPERFRAME:Number = 6;
-		public static const SCREENTICKS:Number = SECPERFRAME*FPS*2;
+		public static const MEASURETICKS:Number = SECPERFRAME*FPS;
+		public static const SCREENTICKS:Number = MEASURETICKS*2;
 		
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
@@ -151,15 +152,24 @@ package HushSunHush
 			/**
 			 * Logic for switching measures goes here
 			 */
-			if((tick+1)%(FPS*SECPERFRAME) == 0){
+			if((tick+1)%(MEASURETICKS) == 0){
 				end_note(); //Notes cannot cross measure boundaries
+			}
+			if(tick % MEASURETICKS == 0){
 				prevNotes = curNotes;
 				curNotes = null;
 			}
 			
 			//Update the position of the beat indicator
 			tickIndicator.x = MARGIN + (tick*(WIDTH-2*MARGIN)) / (FPS*SECPERFRAME*2);
-			draw_notes(noteDisplay,curNotes);
+			
+			noteDisplay.graphics.clear();
+			//Draw the notes being recorded in the current measure
+			draw_notes(noteDisplay,curNotes,0x0000cc,tick/MEASURETICKS,0);
+			//Draw the previously recorded notes in the other measure
+			draw_notes(noteDisplay,prevNotes,0x0000cc,1-Math.floor(tick/MEASURETICKS),0);
+			//Draw the previously recorded notes in the current measure as a guide
+			draw_notes(noteDisplay,prevNotes,0xaaaaaa,tick/MEASURETICKS,5);
 		}
 		
 		public function onMicSampleData( event:SampleDataEvent ):void
@@ -194,7 +204,7 @@ package HushSunHush
 				var newNote:HushNote = new HushNote();
 				newNote.prev = curNotes;
 				curNotes = newNote;
-				newNote.start = tick;
+				newNote.start = tick%MEASURETICKS;
 			}
 		}
 		
@@ -202,14 +212,13 @@ package HushSunHush
 		{
 			//If there is a current note in progress, end it.
 			if(curNotes != null && curNotes.end == -1){
-				curNotes.end = tick;
+				curNotes.end = tick%MEASURETICKS;
 			}
 		}
 		
-		private function draw_notes(ret:Shape, n:HushNote):void
+		private function draw_notes(ret:Shape, n:HushNote, color:uint, measure:int, vpos:int):void
 		{
-			ret.graphics.clear();
-			
+	
 			var cur:HushNote = n;
 			var firsttick:int;
 			var lasttick:int;
@@ -219,14 +228,17 @@ package HushSunHush
 			while(cur != null){
 				firsttick = cur.start;
 				lasttick = cur.end;
-				if(lasttick == -1) lasttick = tick;
+				if(lasttick == -1) lasttick = tick%MEASURETICKS;
+				
+				firsttick = firsttick + measure*MEASURETICKS;
+				lasttick = lasttick + measure*MEASURETICKS;
 				
 				firstx = firsttick*(1280-2*MARGIN)/SCREENTICKS;
 				lastx  = lasttick *(1280-2*MARGIN)/SCREENTICKS;
 				
-				ret.graphics.beginFill(0x0000FF);
-				ret.graphics.lineStyle(1,0x0000ff);
-				ret.graphics.drawRect(firstx,0,lastx-firstx,2);
+				ret.graphics.beginFill(color);
+				ret.graphics.lineStyle(1,color);
+				ret.graphics.drawRect(firstx,vpos,lastx-firstx,2);
 				ret.graphics.endFill();
 				cur = cur.prev;
 			}
