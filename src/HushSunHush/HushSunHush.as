@@ -33,12 +33,19 @@ package HushSunHush
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Shape;
+		private var noteDisplay:Shape;
+		
 		private var debugTextS:Sprite;
 		private var debugText:TextField;
+		
+		private var curNotes:HushNote = null; //Notes of currently recording measure
+		private var prevNotes:HushNote = null; //Notes recorded in previous measure
 		
 		public static const MARGIN:Number = 20;
 		public static const FPS:Number = 30;
 		public static const SECPERFRAME:Number = 6;
+		public static const SCREENTICKS:Number = SECPERFRAME*FPS*2;
+		
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
 		
@@ -74,6 +81,11 @@ package HushSunHush
 			planet.graphics.endFill();
 			planet.y = HEIGHT/3;
 			addChild(planet);
+			
+			noteDisplay = new Shape();
+			noteDisplay.x = MARGIN;
+			noteDisplay.y = 2*MARGIN;
+			addChild(noteDisplay);
 			
 			var child:Shape;
 			//Setup the beat markers		
@@ -135,12 +147,19 @@ package HushSunHush
 		{
 			tick++; //Keep a count of which frame we are on
 			tick = tick % (FPS*SECPERFRAME*2);
+			
+			/**
+			 * Logic for switching measures goes here
+			 */
 			if((tick+1)%(FPS*SECPERFRAME) == 0){
 				end_note(); //Notes cannot cross measure boundaries
+				prevNotes = curNotes;
+				curNotes = null;
 			}
 			
 			//Update the position of the beat indicator
 			tickIndicator.x = MARGIN + (tick*(WIDTH-2*MARGIN)) / (FPS*SECPERFRAME*2);
+			draw_notes(noteDisplay,curNotes);
 		}
 		
 		public function onMicSampleData( event:SampleDataEvent ):void
@@ -160,22 +179,58 @@ package HushSunHush
 						
 			if(total > SILENCE_CUTOFF){
 				//We hear something. If no current note, create one.
-				/* TODO: Remove debug text */
-				debugText.text = "SOUNDS";
 				start_note();
 			} else {
 				//We hear nothing. If there is a current note, end it.
-				debugText.text = "SILENT";
 				end_note();
 			}
 		}
 		
 		private function start_note():void
 		{
+			//Start a new note if either there are no notes yet,
+			// or the most recent note has ended.
+			if(curNotes == null || curNotes.end != -1){
+				var newNote:HushNote = new HushNote();
+				newNote.prev = curNotes;
+				curNotes = newNote;
+				newNote.start = tick;
+			}
 		}
 		
 		private function end_note():void
 		{
+			//If there is a current note in progress, end it.
+			if(curNotes != null && curNotes.end == -1){
+				curNotes.end = tick;
+			}
+		}
+		
+		private function draw_notes(ret:Shape, n:HushNote):void
+		{
+			ret.graphics.clear();
+			
+			var cur:HushNote = n;
+			var firsttick:int;
+			var lasttick:int;
+			var firstx:Number;
+			var lastx:Number;
+			
+			while(cur != null){
+				firsttick = cur.start;
+				lasttick = cur.end;
+				if(lasttick == -1) lasttick = tick;
+				
+				firstx = firsttick*(1280-2*MARGIN)/SCREENTICKS;
+				lastx  = lasttick *(1280-2*MARGIN)/SCREENTICKS;
+				
+				ret.graphics.beginFill(0x0000FF);
+				ret.graphics.lineStyle(1,0x0000ff);
+				ret.graphics.drawRect(firstx,0,lastx-firstx,2);
+				ret.graphics.endFill();
+				cur = cur.prev;
+			}
+			
 		}
 	}
 }
