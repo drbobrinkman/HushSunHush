@@ -138,6 +138,11 @@ package HushSunHush
 			mic.setSilenceLevel(0); //We need to detect both the start and end of notes
 			mic.addEventListener( SampleDataEvent.SAMPLE_DATA, onMicSampleData );
 			
+			loadSongs();
+		}
+		
+		public function loadSongs():void
+		{
 			var variables:URLVariables = new URLVariables();
 			variables.channel = "0";
 			
@@ -197,10 +202,10 @@ package HushSunHush
 			/**
 			 * Logic for switching measures goes here
 			 */
-			if((tick+1)%(MEASURETICKS) == 0){
-				end_note(); //Notes cannot cross measure boundaries
-			}
 			if(tick % MEASURETICKS == 0){
+				if(curNotes != null && curNotes.end == -1){
+					curNotes.end = (tick + MEASURETICKS - 1)%(MEASURETICKS);
+				}
 				prevNotes = curNotes;
 				curNotes = null;
 			}
