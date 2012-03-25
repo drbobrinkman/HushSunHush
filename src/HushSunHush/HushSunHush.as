@@ -32,19 +32,32 @@ package HushSunHush
 	{	
 		private var tick:int=0;
 		private var tickIndicator:Shape;
+		private var planet:Shape;
 		
-		public static const MARGIN:int = 20;
-		public static const FPS:int = 30;
-		public static const SECPERFRAME:int = 6;
-		public static const WIDTH:int = 1280;
-		public static const HEIGHT:int = 720;
+		public static const MARGIN:Number = 20;
+		public static const FPS:Number = 30;
+		public static const SECPERFRAME:Number = 6;
+		public static const WIDTH:Number = 1280;
+		public static const HEIGHT:Number = 720;
+		public static const SILENCE_CUTOFF:Number = 0.5;
+		
+		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
+		private var mic:Microphone;
+		private var micTick:int;
 		
 		public function HushSunHush()
 		{
+			planet = new Shape();
+			planet.graphics.beginFill(0x00aa00,0.5);
+			planet.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
+			planet.graphics.endFill();
+			planet.y = HEIGHT/3;
+			addChild(planet);
 			
-			
+			var child:Shape;
+			//Setup the beat markers		
 			for(var i:int =1; i<8; i++){
-				var child:Shape = new Shape();
+				child = new Shape();
 				child.graphics.beginFill(0xFFFFFF);
 				child.graphics.lineStyle(1, 0xFFFFFF);
 				child.graphics.drawRect(0,0,1,HEIGHT-2*MARGIN);
@@ -53,7 +66,8 @@ package HushSunHush
 				child.graphics.endFill();
 				addChild(child);
 			}
-			var child:Shape = new Shape();
+			//Border for beat markers
+			child = new Shape();
 			child.graphics.lineStyle(1,0xCCCCCC);
 			child.graphics.drawRect(0,0,WIDTH-2*MARGIN,HEIGHT-2*MARGIN);
 			child.x = MARGIN;
@@ -61,6 +75,8 @@ package HushSunHush
 			addChild(child);
 			
 			
+			
+			//Indicator of where we are in the measure(s)
 			tickIndicator = new Shape();
 			tickIndicator.graphics.beginFill(0xCC0000);
 			tickIndicator.graphics.lineStyle(1,0xCC0000);
@@ -70,15 +86,71 @@ package HushSunHush
 			tickIndicator.graphics.endFill();
 			addChild(tickIndicator);
 			
+			//Be update the screen once per frame
 			tickIndicator.addEventListener(Event.ENTER_FRAME,step);
-			
+		
+			mic = Microphone.getMicrophone();
+			mic.addEventListener(StatusEvent.STATUS, this.onMicStatus); 
+			micTick = 0;
+			mic.rate = M_SAMPLE_RATE/1000; //For some reason the flash API uses kHz instead of Hz
+			mic.setSilenceLevel(0); //We need to detect both the start and end of notes
+			mic.addEventListener( SampleDataEvent.SAMPLE_DATA, onMicSampleData );
+		}
+		
+		
+		public function onMicStatus(event:StatusEvent):void 
+		{ 
+			if (event.code == "Microphone.Unmuted") 
+			{ 
+				trace("Microphone access was allowed."); 
+			}  
+			else if (event.code == "Microphone.Muted") 
+			{ 
+				trace("Microphone access was denied."); 
+			} 
 		}
 		
 		public function step ( event:Event ):void
 		{
-			tick++;
+			tick++; //Keep a count of which frame we are on
 			tick = tick % (FPS*SECPERFRAME*2);
+			if((tick+1)%(FPS*SECPERFRAME) == 0){
+				end_note(); //Notes cannot cross measure boundaries
+			}
+			
+			//Update the position of the beat indicator
 			tickIndicator.x = MARGIN + (tick*(WIDTH-2*MARGIN)) / (FPS*SECPERFRAME*2);
+		}
+		
+		public function onMicSampleData( event:SampleDataEvent ):void
+		{
+			// Get number of available input samples
+			var len:uint = event.data.length/4;
+			
+			var total:Number = 0;
+			
+			// Read the input data and stuff it into 
+			// the circular buffer
+			for ( var i:uint = 0; i < len; i++ )
+			{
+				total += event.data.readFloat();
+			}
+			total = total/len;
+			if(total > SILENCE_CUTOFF){
+				//We hear something. If no current note, create one.
+				start_note();
+			} else {
+				//We hear nothing. If there is a current note, end it.
+				end_note();
+			}
+		}
+		
+		private function start_note():void
+		{
+		}
+		
+		private function end_note():void
+		{
 		}
 	}
 }
