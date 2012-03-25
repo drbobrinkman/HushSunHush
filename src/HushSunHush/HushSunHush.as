@@ -25,6 +25,7 @@ package HushSunHush
 	import flash.media.Sound;
 	import flash.text.*;
 	import flash.utils.*;
+	import flash.net.*;
 				
 	[SWF(width="1280", height="720", backgroundColor="#000055", frameRate="30")]
 	
@@ -41,6 +42,12 @@ package HushSunHush
 		private var curNotes:HushNote = null; //Notes of currently recording measure
 		private var prevNotes:HushNote = null; //Notes recorded in previous measure
 		
+		private var windNotes:HushNote = null;
+		private var waveNotes:HushNote = null;
+		
+		private var windLoader:URLLoader;
+		private var waveLoader:URLLoader;
+		
 		public static const MARGIN:Number = 20;
 		public static const FPS:Number = 30;
 		public static const SECPERFRAME:Number = 6;
@@ -51,7 +58,7 @@ package HushSunHush
 		public static const HEIGHT:Number = 720;
 		
 		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
-		public static const SILENCE_CUTOFF:Number = 6.25/1024.0;
+		public static const SILENCE_CUTOFF:Number = 10.0/1024.0;
 		
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
 		private var mic:Microphone;
@@ -59,6 +66,7 @@ package HushSunHush
 		
 		public function HushSunHush()
 		{
+			
 			debugTextS = new Sprite();
 			addChild(debugTextS);
 			debugText = new TextField();
@@ -129,8 +137,45 @@ package HushSunHush
 			mic.rate = M_SAMPLE_RATE/1000; //For some reason the flash API uses kHz instead of Hz
 			mic.setSilenceLevel(0); //We need to detect both the start and end of notes
 			mic.addEventListener( SampleDataEvent.SAMPLE_DATA, onMicSampleData );
+			
+			var variables:URLVariables = new URLVariables();
+			variables.channel = "0";
+			
+			var request:URLRequest = new URLRequest("http://hushsunhush.com/get_song.php");
+			request.method = URLRequestMethod.GET;
+			request.data = variables;
+			
+			windLoader = new URLLoader();
+			//windLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			windLoader.addEventListener(Event.COMPLETE,windLoaded);
+			
+			try {
+				windLoader.load(request);
+			} catch (error:Error) {
+				trace("Unable to load requested document.");
+			}
+			
+			waveLoader = new URLLoader();
+			variables.channel = "1";
+			waveLoader.addEventListener(Event.COMPLETE,wavesLoaded);
+			try {
+				waveLoader.load(request);
+			} catch (error:Error) {
+				trace("Unable to load requested document.");
+			}
 		}
 		
+		public function windLoaded(event:Event):void
+		{
+			var l:URLLoader = URLLoader(event.target);
+			debugText.text = "wind " + l.data;
+		}
+		
+		public function wavesLoaded(event:Event):void
+		{
+			var l:URLLoader = URLLoader(event.target);
+			debugText.text = "waves " + l.data;
+		}
 		
 		public function onMicStatus(event:StatusEvent):void 
 		{ 
