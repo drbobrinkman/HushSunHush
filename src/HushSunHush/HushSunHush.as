@@ -27,7 +27,7 @@ package HushSunHush
 	import flash.text.*;
 	import flash.utils.*;
 				
-	[SWF(width="1280", height="720", backgroundColor="#000055", frameRate="30")]
+	[SWF(width="1280", height="720", backgroundColor="#000000", frameRate="30")]
 	
 	public class HushSunHush extends Sprite
 	{	
@@ -66,6 +66,9 @@ package HushSunHush
 		public static const WAVECOLOR_md:uint = 0x003399;
 		public static const WAVECOLOR_lt:uint = 0x0044cc;
 		
+		public static const SKYCOLOR:uint = 0x330033;
+		public static const PLANTCOLOR:uint = 0x009900;
+		
 		private var mycolor_dk:uint;
 		private var mycolor_md:uint;
 		private var mycolor_lt:uint;
@@ -82,6 +85,13 @@ package HushSunHush
 		
 		public function HushSunHush()
 		{
+			var child:Shape;
+			child = new Shape();
+			child.graphics.beginFill(SKYCOLOR);
+			child.graphics.drawRect(0,0,1280,720);
+			child.graphics.endFill();
+			addChild(child);
+			
 			whichTeam = Math.floor(2.0*Math.random()); //0 is wind, 1 is waves
 			if(whichTeam == 0){
 				mycolor_dk = WINDCOLOR_dk;
@@ -129,7 +139,7 @@ package HushSunHush
 			noteDisplay.y = 2*MARGIN;
 			addChild(noteDisplay);
 			
-			var child:Shape;
+			
 			//Setup the beat markers		
 			for(var i:int =1; i<8; i++){
 				child = new Shape();
