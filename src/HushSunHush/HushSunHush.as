@@ -23,9 +23,9 @@ package HushSunHush
 	import flash.events.*;
 	import flash.media.Microphone;
 	import flash.media.Sound;
+	import flash.net.*;
 	import flash.text.*;
 	import flash.utils.*;
-	import flash.net.*;
 				
 	[SWF(width="1280", height="720", backgroundColor="#000055", frameRate="30")]
 	
@@ -35,6 +35,8 @@ package HushSunHush
 		private var tickIndicator:Shape;
 		private var planet:Shape;
 		private var noteDisplay:Shape;
+		
+		private var whichTeam:int=0;
 		
 		private var debugTextS:Sprite;
 		private var debugText:TextField;
@@ -57,6 +59,20 @@ package HushSunHush
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
 		
+		public static const WINDCOLOR_dk:uint = 0x666666;
+		public static const WINDCOLOR_md:uint = 0x999999;
+		public static const WINDCOLOR_lt:uint = 0xcccccc;
+		public static const WAVECOLOR_dk:uint = 0x002266;
+		public static const WAVECOLOR_md:uint = 0x003399;
+		public static const WAVECOLOR_lt:uint = 0x0044cc;
+		
+		private var mycolor_dk:uint;
+		private var mycolor_md:uint;
+		private var mycolor_lt:uint;
+		private var otcolor_dk:uint;
+		private var otcolor_md:uint;
+		private var otcolor_lt:uint;
+		
 		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
 		public static const SILENCE_CUTOFF:Number = 10.0/1024.0;
 		
@@ -66,6 +82,23 @@ package HushSunHush
 		
 		public function HushSunHush()
 		{
+			whichTeam = Math.floor(2.0*Math.random()); //0 is wind, 1 is waves
+			if(whichTeam == 0){
+				mycolor_dk = WINDCOLOR_dk;
+				mycolor_md = WINDCOLOR_md;
+				mycolor_lt = WINDCOLOR_lt;
+				otcolor_dk = WAVECOLOR_dk;
+				otcolor_md = WAVECOLOR_md;
+				otcolor_lt = WAVECOLOR_lt;
+			} else {
+				whichTeam = 1;
+				mycolor_dk = WAVECOLOR_dk;
+				mycolor_md = WAVECOLOR_md;
+				mycolor_lt = WAVECOLOR_lt;
+				otcolor_dk = WINDCOLOR_dk;
+				otcolor_md = WINDCOLOR_md;
+				otcolor_lt = WINDCOLOR_lt;
+			}
 			
 			debugTextS = new Sprite();
 			addChild(debugTextS);
@@ -215,11 +248,11 @@ package HushSunHush
 			
 			noteDisplay.graphics.clear();
 			//Draw the notes being recorded in the current measure
-			draw_notes(noteDisplay,curNotes,0x0000cc,tick/MEASURETICKS,0);
+			draw_notes(noteDisplay,curNotes,mycolor_lt,tick/MEASURETICKS,0);
 			//Draw the previously recorded notes in the other measure
-			draw_notes(noteDisplay,prevNotes,0x0000cc,1-Math.floor(tick/MEASURETICKS),0);
+			draw_notes(noteDisplay,curNotes,mycolor_md,1-Math.floor(tick/MEASURETICKS),7);
 			//Draw the previously recorded notes in the current measure as a guide
-			draw_notes(noteDisplay,prevNotes,0xaaaaaa,tick/MEASURETICKS,5);
+			draw_notes(noteDisplay,prevNotes,mycolor_md,tick/MEASURETICKS,7);
 		}
 		
 		public function onMicSampleData( event:SampleDataEvent ):void
@@ -288,7 +321,7 @@ package HushSunHush
 				
 				ret.graphics.beginFill(color);
 				ret.graphics.lineStyle(1,color);
-				ret.graphics.drawRect(firstx,vpos,lastx-firstx,2);
+				ret.graphics.drawRect(firstx,vpos,lastx-firstx,5);
 				ret.graphics.endFill();
 				cur = cur.prev;
 			}
