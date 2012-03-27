@@ -35,6 +35,7 @@ package HushSunHush
 		private var tickIndicator:Shape;
 		private var planet:Shape;
 		private var noteDisplay:Shape;
+		private var noteGrid:Shape;
 		
 		private var whichTeam:int=0;
 		
@@ -62,9 +63,9 @@ package HushSunHush
 		public static const WINDCOLOR_dk:uint = 0x666666;
 		public static const WINDCOLOR_md:uint = 0x999999;
 		public static const WINDCOLOR_lt:uint = 0xcccccc;
-		public static const WAVECOLOR_dk:uint = 0x002266;
-		public static const WAVECOLOR_md:uint = 0x003399;
-		public static const WAVECOLOR_lt:uint = 0x0044cc;
+		public static const WAVECOLOR_dk:uint = 0x002277;
+		public static const WAVECOLOR_md:uint = 0x0033aa;
+		public static const WAVECOLOR_lt:uint = 0x0044dd;
 		
 		public static const SKYCOLOR:uint = 0x330033;
 		public static const PLANTCOLOR:uint = 0x009900;
@@ -136,38 +137,33 @@ package HushSunHush
 			
 			noteDisplay = new Shape();
 			noteDisplay.x = MARGIN;
-			noteDisplay.y = 2*MARGIN;
+			noteDisplay.y = 100+MARGIN;
 			addChild(noteDisplay);
 			
+			noteGrid = new Shape();
 			
 			//Setup the beat markers		
 			for(var i:int =1; i<8; i++){
-				child = new Shape();
-				child.graphics.beginFill(0xFFFFFF);
-				child.graphics.lineStyle(1, 0xFFFFFF);
-				child.graphics.drawRect(0,0,1,HEIGHT-2*MARGIN);
-				child.x = MARGIN + (i*(WIDTH-MARGIN))/8;
-				child.y = MARGIN;
-				child.graphics.endFill();
-				addChild(child);
+				noteGrid.graphics.beginFill(0xFFFFFF);
+				noteGrid.graphics.lineStyle(1, 0xFFFFFF);
+				noteGrid.graphics.drawRect((i*(WIDTH-MARGIN))/8,0,1,35+2*MARGIN);
+				noteGrid.graphics.endFill();
 			}
 			//Border for beat markers
-			child = new Shape();
-			child.graphics.lineStyle(1,0xCCCCCC);
-			child.graphics.drawRect(0,0,WIDTH-2*MARGIN,HEIGHT-2*MARGIN);
-			child.x = MARGIN;
-			child.y = MARGIN;
-			addChild(child);
+			noteGrid.graphics.lineStyle(2,0xCCCCCC);
+			noteGrid.graphics.drawRect(0,0,WIDTH-2*MARGIN,35+2*MARGIN);
 			
-			
+			noteGrid.x = MARGIN;
+			noteGrid.y = 100;
+			addChild(noteGrid);
 			
 			//Indicator of where we are in the measure(s)
 			tickIndicator = new Shape();
 			tickIndicator.graphics.beginFill(0xCC0000);
 			tickIndicator.graphics.lineStyle(1,0xCC0000);
-			tickIndicator.graphics.drawRect(0,0,1,HEIGHT-4*MARGIN);
+			tickIndicator.graphics.drawRect(0,0,1,35+2*MARGIN);
 			tickIndicator.x = MARGIN;
-			tickIndicator.y = 2*MARGIN;
+			tickIndicator.y = 100;
 			tickIndicator.graphics.endFill();
 			addChild(tickIndicator);
 			
@@ -216,13 +212,35 @@ package HushSunHush
 		public function windLoaded(event:Event):void
 		{
 			var l:URLLoader = URLLoader(event.target);
-			debugText.text = "wind " + l.data;
+			//debugText.text = "wind " + l.data;
+			var results:Array = l.data.split(" ");
+			var noteCount:int = results[1];
+			
+			windNotes = null;
+			for(var i:int = 3; i< 3+2*noteCount; i += 2){
+				var nxtWindNote:HushNote = new HushNote();
+				nxtWindNote.prev = windNotes;
+				windNotes = nxtWindNote;
+				windNotes.start = results[i];
+				windNotes.end = results[i+1];
+			}
 		}
 		
 		public function wavesLoaded(event:Event):void
 		{
 			var l:URLLoader = URLLoader(event.target);
-			debugText.text = "waves " + l.data;
+			//debugText.text = "waves " + l.data;
+			var results:Array = l.data.split(" ");
+			var noteCount:int = results[1];
+			
+			waveNotes = null;
+			for(var i:int = 3; i< 3+2*noteCount; i += 2){
+				var nxtWaveNote:HushNote = new HushNote();
+				nxtWaveNote.prev = waveNotes;
+				waveNotes = nxtWaveNote;
+				waveNotes.start = results[i];
+				waveNotes.end = results[i+1];
+			}
 		}
 		
 		public function onMicStatus(event:StatusEvent):void 
@@ -263,6 +281,20 @@ package HushSunHush
 			draw_notes(noteDisplay,curNotes,mycolor_md,1-Math.floor(tick/MEASURETICKS),7);
 			//Draw the previously recorded notes in the current measure as a guide
 			draw_notes(noteDisplay,prevNotes,mycolor_md,tick/MEASURETICKS,7);
+			var myNotes:HushNote;
+			var otNotes:HushNote;
+			if(whichTeam == 0){
+				myNotes = windNotes;
+				otNotes = waveNotes;
+			} else {
+				myNotes = waveNotes;
+				otNotes = windNotes;
+			}
+			draw_notes(noteDisplay,myNotes,mycolor_dk,tick/MEASURETICKS,14);
+			draw_notes(noteDisplay,myNotes,mycolor_dk,1-Math.floor(tick/MEASURETICKS),14);
+			
+			draw_notes(noteDisplay,otNotes,otcolor_dk,tick/MEASURETICKS,28);
+			draw_notes(noteDisplay,otNotes,otcolor_dk,1-Math.floor(tick/MEASURETICKS),28);
 		}
 		
 		public function onMicSampleData( event:SampleDataEvent ):void
