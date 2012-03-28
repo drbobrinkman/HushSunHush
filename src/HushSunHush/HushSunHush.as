@@ -60,9 +60,9 @@ package HushSunHush
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
 		
-		public static const PERFECT:Number = 1.0;
-		public static const GREAT:Number = 0.95;
-		public static const GOOD:Number = 0.90;
+		public static const PERFECT:Number = 0.95;
+		public static const GREAT:Number = 0.90;
+		public static const GOOD:Number = 0.80;
 		
 		/**
 		 * Pallette elements:
@@ -268,48 +268,92 @@ package HushSunHush
 			} 
 		}
 		
+		var v1:Vector.<Boolean>;
+		var v2:Vector.<Boolean>;
+		
 		public function match_percentage(notes1:HushNote, notes2:HushNote):Number
 		{
-			var ret:Number = 0.0;
+			if(v1 == null || v2 == null){
+				v1 = new Vector.<Boolean>(180);
+				v2 = new Vector.<Boolean>(180);
+			}
 			
 			
-			return ret;
+			var i:int;
+			for(i = 0; i<180; i++){
+				v1[i] = false;
+				v2[i] = false;
+			}
+			
+			while(notes1 != null){
+				for(i=notes1.start; i <= notes1.end; i++){
+					v1[i] = true;
+				}
+				notes1 = notes1.prev;
+			}
+			
+			while(notes2 != null){
+				for(i=notes2.start; i <= notes2.end; i++){
+					v2[i] = true;
+				}
+				notes2 = notes2.prev;
+			}
+			
+			var count:Number = 0;
+			for(i = 0; i<180; i++){
+				if(v1[i] == v2[i]){
+					count++;
+				}
+			}
+			
+			return count/180.0;
 		}
 		
 		public function scoreNotes(current:HushNote, previous:HushNote, team:HushNote):void
 		{
 			var thisScore:int = 0;
-			//One point for each note in current, up to 5
 			
+			//One point for each note in current, up to 5			
 			var temp:HushNote = current;
-			while(current != null && thisScore < 5){
-				current = current.prev;
+			while(temp != null && thisScore < 5){
+				temp = temp.prev;
 				thisScore++;
 			}
 			
+			debugText.text = "";
 			//Look for good, great, or perfect match with previous
 			var matchPct:Number = match_percentage(current,previous);
 			if(matchPct >= PERFECT){
 				thisScore = thisScore * 2.0;
+				debugText.text += "Perfect ";
 			} else if(matchPct >= GREAT){
 				thisScore = thisScore * 1.67;
+				debugText.text += "Great   ";
 			} else if(matchPct >= GOOD){
 				thisScore = thisScore * 1.33;
+				debugText.text += "Good    ";
+			} else {
+				debugText.text += "Bad     ";
 			}
 			
 			//Do it again for matching the team song
 			matchPct = match_percentage(current,team);
 			if(matchPct >= PERFECT){
 				thisScore = thisScore * 2.0;
+				debugText.text += "Perfect ";
 			} else if(matchPct >= GREAT){
 				thisScore = thisScore * 1.67;
+				debugText.text += "Great   ";
 			} else if(matchPct >= GOOD){
 				thisScore = thisScore * 1.33;
+				debugText.text += "Good    ";
+			} else {
+				debugText.text += "Bad     ";
 			}
 			
 			thisScore = Math.round(thisScore); //Round to nearest point value.
 			//Max number of points possible is 5*2*2 = 20.
-			debugText.text = thisScore.toString();
+			debugText.text += thisScore.toString();
 		}
 		
 		public function step ( event:Event ):void
