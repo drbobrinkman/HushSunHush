@@ -60,6 +60,10 @@ package HushSunHush
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
 		
+		public static const PERFECT:Number = 1.0;
+		public static const GREAT:Number = 0.95;
+		public static const GOOD:Number = 0.90;
+		
 		/**
 		 * Pallette elements:
 		 * Violet: 0x630063
@@ -135,7 +139,7 @@ package HushSunHush
 			debugText.defaultTextFormat = format;
 			
 			debugTextS.addChild(debugText);
-			debugText.text = "Hello, world";
+			debugText.text = "";//"Hello, world";
 			
 			planet = new Shape();
 			planet.graphics.beginFill(0x00aa00,0.5);
@@ -264,10 +268,64 @@ package HushSunHush
 			} 
 		}
 		
+		public function match_percentage(notes1:HushNote, notes2:HushNote):Number
+		{
+			var ret:Number = 0.0;
+			
+			
+			return ret;
+		}
+		
+		public function scoreNotes(current:HushNote, previous:HushNote, team:HushNote):void
+		{
+			var thisScore:int = 0;
+			//One point for each note in current, up to 5
+			
+			var temp:HushNote = current;
+			while(current != null && thisScore < 5){
+				current = current.prev;
+				thisScore++;
+			}
+			
+			//Look for good, great, or perfect match with previous
+			var matchPct:Number = match_percentage(current,previous);
+			if(matchPct >= PERFECT){
+				thisScore = thisScore * 2.0;
+			} else if(matchPct >= GREAT){
+				thisScore = thisScore * 1.67;
+			} else if(matchPct >= GOOD){
+				thisScore = thisScore * 1.33;
+			}
+			
+			//Do it again for matching the team song
+			matchPct = match_percentage(current,team);
+			if(matchPct >= PERFECT){
+				thisScore = thisScore * 2.0;
+			} else if(matchPct >= GREAT){
+				thisScore = thisScore * 1.67;
+			} else if(matchPct >= GOOD){
+				thisScore = thisScore * 1.33;
+			}
+			
+			thisScore = Math.round(thisScore); //Round to nearest point value.
+			//Max number of points possible is 5*2*2 = 20.
+			debugText.text = thisScore.toString();
+		}
+		
 		public function step ( event:Event ):void
 		{
 			tick++; //Keep a count of which frame we are on
 			tick = tick % (FPS*SECPERFRAME*2);
+			
+			var myNotes:HushNote;
+			var otNotes:HushNote;
+			if(whichTeam == 0){
+				myNotes = windNotes;
+				otNotes = waveNotes;
+			} else {
+				myNotes = waveNotes;
+				otNotes = windNotes;
+			}
 			
 			/**
 			 * Logic for switching measures goes here
@@ -276,6 +334,9 @@ package HushSunHush
 				if(curNotes != null && curNotes.end == -1){
 					curNotes.end = (tick + MEASURETICKS - 1)%(MEASURETICKS);
 				}
+				
+				scoreNotes(curNotes,prevNotes,myNotes);
+				
 				prevNotes = curNotes;
 				curNotes = null;
 			}
@@ -290,15 +351,7 @@ package HushSunHush
 			draw_notes(noteDisplay,curNotes,mycolor_md,1-Math.floor(tick/MEASURETICKS),7);
 			//Draw the previously recorded notes in the current measure as a guide
 			draw_notes(noteDisplay,prevNotes,mycolor_md,tick/MEASURETICKS,7);
-			var myNotes:HushNote;
-			var otNotes:HushNote;
-			if(whichTeam == 0){
-				myNotes = windNotes;
-				otNotes = waveNotes;
-			} else {
-				myNotes = waveNotes;
-				otNotes = windNotes;
-			}
+			
 			draw_notes(noteDisplay,myNotes,mycolor_dk,tick/MEASURETICKS,14);
 			draw_notes(noteDisplay,myNotes,mycolor_dk,1-Math.floor(tick/MEASURETICKS),14);
 			
