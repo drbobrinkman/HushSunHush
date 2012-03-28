@@ -60,15 +60,24 @@ package HushSunHush
 		public static const WIDTH:Number = 1280;
 		public static const HEIGHT:Number = 720;
 		
+		/**
+		 * Pallette elements:
+		 * Violet: 0x630063
+		 * Indigo: 0x3e0c38
+		 * Seablu: 0x0087ff
+		 * teal  : 0x0ce8a7
+		 * green : 0x20ff00
+		 * */
+		
 		public static const WINDCOLOR_dk:uint = 0x666666;
 		public static const WINDCOLOR_md:uint = 0x999999;
 		public static const WINDCOLOR_lt:uint = 0xcccccc;
-		public static const WAVECOLOR_dk:uint = 0x002277;
-		public static const WAVECOLOR_md:uint = 0x0033aa;
-		public static const WAVECOLOR_lt:uint = 0x0044dd;
+		public static const WAVECOLOR_dk:uint = 0x001077;
+		public static const WAVECOLOR_md:uint = 0x0032aa;
+		public static const WAVECOLOR_lt:uint = 0x0054cc;
 		
 		public static const SKYCOLOR:uint = 0x330033;
-		public static const PLANTCOLOR:uint = 0x009900;
+		public static const PLANTCOLOR:uint = 0x107f00; //based on 0x20ff00
 		
 		private var mycolor_dk:uint;
 		private var mycolor_md:uint;
@@ -159,8 +168,8 @@ package HushSunHush
 			
 			//Indicator of where we are in the measure(s)
 			tickIndicator = new Shape();
-			tickIndicator.graphics.beginFill(0xCC0000);
-			tickIndicator.graphics.lineStyle(1,0xCC0000);
+			tickIndicator.graphics.beginFill(0x2000ff);
+			tickIndicator.graphics.lineStyle(1,0x20ff00);
 			tickIndicator.graphics.drawRect(0,0,1,35+2*MARGIN);
 			tickIndicator.x = MARGIN;
 			tickIndicator.y = 100;
