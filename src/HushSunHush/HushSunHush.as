@@ -27,7 +27,7 @@ package HushSunHush
 	import flash.text.*;
 	import flash.utils.*;
 				
-	[SWF(width="1280", height="720", backgroundColor="#000000", frameRate="30")]
+	[SWF(width="800", height="450", backgroundColor="#000000", frameRate="30")]
 	
 	public class HushSunHush extends Sprite
 	{	
@@ -57,8 +57,8 @@ package HushSunHush
 		public static const MEASURETICKS:Number = SECPERFRAME*FPS;
 		public static const SCREENTICKS:Number = MEASURETICKS*2;
 		
-		public static const WIDTH:Number = 1280;
-		public static const HEIGHT:Number = 720;
+		public static const WIDTH:Number = 800;
+		public static const HEIGHT:Number = 450;
 		
 		public static const PERFECT:Number = 0.95;
 		public static const GREAT:Number = 0.90;
@@ -464,8 +464,8 @@ package HushSunHush
 				firsttick = firsttick + measure*MEASURETICKS;
 				lasttick = lasttick + measure*MEASURETICKS;
 				
-				firstx = firsttick*(1280-2*MARGIN)/SCREENTICKS;
-				lastx  = lasttick *(1280-2*MARGIN)/SCREENTICKS;
+				firstx = firsttick*(WIDTH-2*MARGIN)/SCREENTICKS;
+				lastx  = lasttick *(WIDTH-2*MARGIN)/SCREENTICKS;
 				
 				ret.graphics.beginFill(color);
 				ret.graphics.lineStyle(1,color);

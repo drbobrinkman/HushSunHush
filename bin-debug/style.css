@@ -1,0 +1,28 @@
+body
+{ 
+font-family:"Verdana";
+background-color: #000000;
+color: #ffffff;
+text-align: center;
+}
+
+a:link{ color:#18bf00;}
+a:visited{  color:#18bf00;}
+a:hover{  color: #20ff00;}
+a:active{  color: #18bf00;}
+
+div
+{
+background-color: #330033; 
+padding:20px;
+margin:20px;
+text-align:left;
+}
+
+div.title
+{
+background-color: #000000; 
+text-align:center;
+}
+
+#wrapper {width: 820px; margin: 0 auto; text-align: left; background-color: #000000;}
