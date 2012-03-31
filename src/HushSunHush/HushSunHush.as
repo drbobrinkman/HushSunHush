@@ -178,16 +178,18 @@ package HushSunHush
 			
 			noteGrid = new Shape();
 			
-			//Setup the beat markers		
-			for(var i:int =1; i<8; i++){
-				noteGrid.graphics.beginFill(0xFFFFFF);
-				noteGrid.graphics.lineStyle(1, 0xFFFFFF);
-				noteGrid.graphics.drawRect((i*(WIDTH-MARGIN))/8,0,1,35+2*MARGIN);
-				noteGrid.graphics.endFill();
-			}
-			//Border for beat markers
+			//Setup the beat markers	
 			noteGrid.graphics.lineStyle(2,0xCCCCCC);
-			noteGrid.graphics.drawRect(0,0,WIDTH-2*MARGIN,35+2*MARGIN);
+			noteGrid.graphics.drawRect(0,0,WIDTH-2*MARGIN,1);
+			noteGrid.graphics.drawRect(0,35+2*MARGIN,WIDTH-2*MARGIN,1);
+			noteGrid.graphics.lineStyle(1, 0xFFFFFF);
+			for(var i:int =0; i<=8; i++){
+				if(i%4 == 0){
+					noteGrid.graphics.drawRect((i*(WIDTH-2*MARGIN))/8 - Math.floor((i+4)/4),0,3,35+2*MARGIN);
+				} else {
+					noteGrid.graphics.drawRect((i*(WIDTH-2*MARGIN))/8,0,1,35+2*MARGIN);
+				}
+			}
 			
 			noteGrid.x = MARGIN;
 			noteGrid.y = 100;
