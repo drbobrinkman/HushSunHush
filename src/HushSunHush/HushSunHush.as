@@ -103,7 +103,7 @@ package HushSunHush
 		private var otcolor_lt:uint;
 		
 		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
-		public static const SILENCE_CUTOFF:Number = 50.0/1024.0;
+		private var SILENCE_CUTOFF:Number = 50.0/1024.0;
 		
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
 		private var mic:Microphone;
@@ -226,6 +226,8 @@ package HushSunHush
 			micLevel.graphics.endFill();
 			addChild(micLevel);
 			
+			stage.addEventListener(MouseEvent.CLICK, changeMicLevel); 
+			
 			//Be update the screen once per frame
 			tickIndicator.addEventListener(Event.ENTER_FRAME,step);
 		
@@ -243,6 +245,19 @@ package HushSunHush
 			waveTransform = new SoundTransform(0.0,0);
 			
 			theWaveSound.play(0,20,waveTransform);
+		}
+		
+		
+		
+		
+		public function changeMicLevel(event:MouseEvent):void 
+		{ 
+			if(event.stageX >= MARGIN && event.stageX <= (WIDTH-MARGIN)){
+				var tempX:Number = event.stageX - MARGIN;
+				tempX = tempX / (WIDTH-2*MARGIN);
+				SILENCE_CUTOFF = tempX;
+				micLevel.x = MARGIN + SILENCE_CUTOFF*(WIDTH-2*MARGIN);
+			}
 		}
 		
 		public function loadSongs():void
