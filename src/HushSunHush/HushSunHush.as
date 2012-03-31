@@ -48,6 +48,9 @@ package HushSunHush
 		private var micLevel:Shape;
 		private var micCheck:Shape;
 		
+		private var globalScore:Shape;
+		private var yourScore:Shape;
+		
 		private var whichTeam:int=0;
 		
 		private var debugTextS:Sprite;
@@ -61,6 +64,7 @@ package HushSunHush
 		
 		private var windLoader:URLLoader;
 		private var waveLoader:URLLoader;
+		private var scoreLoader:URLLoader;
 		
 		public static const MARGIN:Number = 20;
 		public static const FPS:Number = 30;
@@ -75,6 +79,7 @@ package HushSunHush
 		public static const GREAT:Number = 0.90;
 		public static const GOOD:Number = 0.80;
 		
+		public static const MAX_SCORE:Number = 20; //5 notes max, multiplier is 4 max
 		/**
 		 * Pallette elements:
 		 * Violet: 0x630063
@@ -108,6 +113,8 @@ package HushSunHush
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
 		private var mic:Microphone;
 		private var micTick:int;
+		
+		private var current_score:Number = 0.0;
 		
 		private var waveTransform:SoundTransform;	
 	
@@ -153,6 +160,8 @@ package HushSunHush
 			debugText.defaultTextFormat = format;
 			
 			debugTextS.addChild(debugText);
+			debugTextS.y = HEIGHT - 15;
+			debugTextS.x = WIDTH/2;
 			debugText.text = "";//"Hello, world";
 			
 			planet = new Shape();
@@ -238,7 +247,54 @@ package HushSunHush
 			mic.setSilenceLevel(0); //We need to detect both the start and end of notes
 			mic.addEventListener( SampleDataEvent.SAMPLE_DATA, onMicSampleData );
 			
+			
+			var gsTextS:Sprite = new Sprite();
+			addChild(gsTextS);
+			var gsText:TextField = new TextField();
+			gsText.autoSize = TextFieldAutoSize.LEFT;
+			gsText.background = false;
+			gsText.border = false;
+		
+			gsText.defaultTextFormat = format;
+			
+			gsTextS.addChild(gsText);
+			gsText.text = "Worldwide total soothing praise:";
+			gsTextS.x = MARGIN/2;
+			gsTextS.y = MARGIN;
+			
+			globalScore = new Shape();
+			globalScore.graphics.beginFill(TEAL);
+			globalScore.graphics.drawRect(0,0,0.25*(WIDTH-2*MARGIN),13);
+			globalScore.x = MARGIN;
+			globalScore.y = MARGIN+17;
+			globalScore.graphics.endFill();
+			addChild(globalScore);
+			
+			
+			var ysTextS:Sprite = new Sprite();
+			addChild(ysTextS);
+			var ysText:TextField = new TextField();
+			ysText.autoSize = TextFieldAutoSize.LEFT;
+			ysText.background = false;
+			ysText.border = false;
+			
+			ysText.defaultTextFormat = format;
+			
+			ysTextS.addChild(ysText);
+			ysText.text = "Your soothing praise:";
+			ysTextS.x = MARGIN/2;
+			ysTextS.y = MARGIN+17+17;
+			
+			yourScore = new Shape();
+			yourScore.graphics.beginFill(TEAL);
+			yourScore.graphics.drawRect(0,0,0.125*(WIDTH-2*MARGIN),5);
+			yourScore.x = MARGIN;
+			yourScore.y = MARGIN+17+17+17;
+			yourScore.graphics.endFill();
+			addChild(yourScore);
+			
 			loadSongs();
+			loadScore();
 			
 			var theWaveSound: Sound = new WaveSound() as Sound;
 			
@@ -287,6 +343,35 @@ package HushSunHush
 			} catch (error:Error) {
 				trace("Unable to load requested document.");
 			}
+		}
+		
+		public function loadScore():void
+		{		
+			var request:URLRequest = new URLRequest("http://hushsunhush.com/get_score.php");
+			request.method = URLRequestMethod.GET;
+			
+			scoreLoader = new URLLoader();
+			scoreLoader.addEventListener(Event.COMPLETE,scoreLoaded);
+			
+			try {
+				scoreLoader.load(request);
+			} catch (error:Error) {
+				trace("Unable to load score.");
+			}
+		}
+		
+		public function scoreLoaded(event:Event):void
+		{
+			var l:URLLoader = URLLoader(event.target);
+			var results:Array = l.data.split(" ");
+			
+			globalScore.graphics.clear();
+			globalScore.graphics.beginFill(TEAL);
+			var scoreProp:Number = results[0]/MAX_SCORE;
+			globalScore.graphics.drawRect(0,0,scoreProp*(WIDTH-2*MARGIN),13);
+			globalScore.graphics.endFill();
+			
+			debugText.text = "Score: " + results[0] + ", Players" + results[1];
 		}
 		
 		public function windLoaded(event:Event):void
@@ -422,6 +507,18 @@ package HushSunHush
 			
 			thisScore = Math.round(thisScore); //Round to nearest point value.
 			//Max number of points possible is 5*2*2 = 20.
+			
+			if(current_score == 0.0){
+				current_score = thisScore;
+			} else {
+				current_score = (thisScore + current_score)/2.0;
+			}
+			
+			yourScore.graphics.clear();
+			yourScore.graphics.beginFill(TEAL);
+			yourScore.graphics.drawRect(0,0,(current_score/MAX_SCORE)*(WIDTH-2*MARGIN),5);
+			yourScore.graphics.endFill();
+			
 			debugText.text += thisScore.toString();
 		}
 		
@@ -543,7 +640,7 @@ package HushSunHush
 				lasttick = lasttick + measure*MEASURETICKS;
 				
 				firstx = firsttick*(WIDTH-2*MARGIN)/SCREENTICKS;
-				lastx  = lasttick *(WIDTH-2*MARGIN)/SCREENTICKS;
+				lastx  = (lasttick+1)*(WIDTH-2*MARGIN)/SCREENTICKS;
 				
 				ret.graphics.beginFill(color);
 				ret.graphics.lineStyle(1,color);
