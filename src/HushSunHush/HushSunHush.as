@@ -79,6 +79,8 @@ package HushSunHush
 		public static const GREAT:Number = 0.90;
 		public static const GOOD:Number = 0.80;
 		
+		public static const SOUND_LAG:Number = 8;
+		
 		public static const MAX_SCORE:Number = 20; //5 notes max, multiplier is 4 max
 		/**
 		 * Pallette elements:
@@ -107,7 +109,6 @@ package HushSunHush
 		private var otcolor_md:uint;
 		private var otcolor_lt:uint;
 		
-		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
 		private var SILENCE_CUTOFF:Number = 50.0/1024.0;
 		
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
@@ -115,9 +116,10 @@ package HushSunHush
 		private var micTick:int;
 		
 		private var current_score:Number = 0.0;
-		
-		private var waveTransform:SoundTransform;	
 	
+		private var theWaveArray:ByteArray;
+		private var moddedWaveSound:Sound;
+		
 		public function HushSunHush()
 		{
 			var child:Shape;
@@ -298,15 +300,54 @@ package HushSunHush
 			loadSongs();
 			loadScore();
 			
-			var theWaveSound: Sound = new WaveSound() as Sound;
+			var theWaveSound:Sound = new WaveSound as Sound;
+			theWaveArray = new ByteArray();
+			theWaveSound.extract(theWaveArray,(44.100*theWaveSound.length));
+			theWaveArray.position = 0;
+
 			
-			waveTransform = new SoundTransform(0.0,0);
+			moddedWaveSound = new Sound();
+			moddedWaveSound.addEventListener(SampleDataEvent.SAMPLE_DATA,waveSampler);
+			moddedWaveSound.play();
 			
-			theWaveSound.play(0,20,waveTransform);
+		}
+
+		public function is_loud(wtick:int, notes:HushNote):Boolean{
+			var cur:HushNote = notes;
+			while(cur != null){
+				if(wtick >= cur.start && wtick <= cur.end){
+					return true;
+				}
+				cur = cur.prev;
+			}
+			
+			return false;
 		}
 		
-		
-		
+		public function waveSampler(event:SampleDataEvent):void{	
+			var temp:Number;
+			var whichTick:int = (tick+SOUND_LAG)%MEASURETICKS;
+			var loud:Boolean = is_loud(whichTick,waveNotes);
+			
+			//This function only returns 2 ticks of data at a time
+			for ( var c:int=0; c<2*1470; c++ ) {
+				if(theWaveArray.bytesAvailable <= 0){
+					theWaveArray.position = 0;
+				}
+				temp = theWaveArray.readFloat();
+				
+				if(c == 1470){
+					whichTick = whichTick+1;
+					loud = is_loud(whichTick,waveNotes);
+				}
+				
+				if(!loud){
+					temp = temp * 0.10;
+				}
+				event.data.writeFloat(temp);
+				event.data.writeFloat(temp);
+			}
+		}
 		
 		public function changeMicLevel(event:MouseEvent):void 
 		{ 
@@ -373,7 +414,7 @@ package HushSunHush
 			globalScore.graphics.drawRect(0,0,scoreProp*(WIDTH-2*MARGIN),13);
 			globalScore.graphics.endFill();
 			
-			debugText.text = "Score: " + results[0] + ", Players" + results[1];
+			//debugText.text = "Score: " + results[0] + ", Players" + results[1];
 		}
 		
 		public function windLoaded(event:Event):void
@@ -476,35 +517,35 @@ package HushSunHush
 				thisScore++;
 			}
 			
-			debugText.text = "";
+			//debugText.text = "";
 			//Look for good, great, or perfect match with previous
 			var matchPct:Number = match_percentage(current,previous);
 			if(matchPct >= PERFECT){
 				thisScore = thisScore * 2.0;
-				debugText.text += "Perfect ";
+				//debugText.text += "Perfect ";
 			} else if(matchPct >= GREAT){
 				thisScore = thisScore * 1.67;
-				debugText.text += "Great   ";
+				//debugText.text += "Great   ";
 			} else if(matchPct >= GOOD){
 				thisScore = thisScore * 1.33;
-				debugText.text += "Good    ";
+				//debugText.text += "Good    ";
 			} else {
-				debugText.text += "Bad     ";
+				//debugText.text += "Bad     ";
 			}
 			
 			//Do it again for matching the team song
 			matchPct = match_percentage(current,team);
 			if(matchPct >= PERFECT){
 				thisScore = thisScore * 2.0;
-				debugText.text += "Perfect ";
+				//debugText.text += "Perfect ";
 			} else if(matchPct >= GREAT){
 				thisScore = thisScore * 1.67;
-				debugText.text += "Great   ";
+				//debugText.text += "Great   ";
 			} else if(matchPct >= GOOD){
 				thisScore = thisScore * 1.33;
-				debugText.text += "Good    ";
+				//debugText.text += "Good    ";
 			} else {
-				debugText.text += "Bad     ";
+				//debugText.text += "Bad     ";
 			}
 			
 			thisScore = Math.round(thisScore); //Round to nearest point value.
@@ -521,7 +562,7 @@ package HushSunHush
 			yourScore.graphics.drawRect(0,0,(current_score/MAX_SCORE)*(WIDTH-2*MARGIN),5);
 			yourScore.graphics.endFill();
 			
-			debugText.text += thisScore.toString();
+			//debugText.text += thisScore.toString();
 		}
 		
 		public function step ( event:Event ):void
@@ -548,7 +589,7 @@ package HushSunHush
 				if(curNotes != null && curNotes.end == -1){
 					curNotes.end = (tick + MEASURETICKS - 1)%(MEASURETICKS);
 				}
-				
+
 				scoreNotes(curNotes,prevNotes,myNotes);
 				
 				prevNotes = curNotes;
