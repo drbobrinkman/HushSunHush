@@ -23,19 +23,30 @@ package HushSunHush
 	import flash.events.*;
 	import flash.media.Microphone;
 	import flash.media.Sound;
+	import flash.media.SoundTransform;
 	import flash.net.*;
 	import flash.text.*;
 	import flash.utils.*;
 				
 	[SWF(width="800", height="450", backgroundColor="#000000", frameRate="30")]
 	
+	
+	
 	public class HushSunHush extends Sprite
 	{	
+		[Embed(source="Winds_v01.mp3")]
+		private static var WindSound: Class;
+		
+		[Embed(source="Waves_v01.mp3")]
+		private static var WaveSound: Class;
+		
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Shape;
 		private var noteDisplay:Shape;
 		private var noteGrid:Shape;
+		private var micLevel:Shape;
+		private var micCheck:Shape;
 		
 		private var whichTeam:int=0;
 		
@@ -79,6 +90,7 @@ package HushSunHush
 		public static const WAVECOLOR_dk:uint = 0x001077;
 		public static const WAVECOLOR_md:uint = 0x0032aa;
 		public static const WAVECOLOR_lt:uint = 0x0054cc;
+		public static const TEAL:uint = 0x0ce8a7;
 		
 		public static const SKYCOLOR:uint = 0x330033;
 		public static const PLANTCOLOR:uint = 0x107f00; //based on 0x20ff00
@@ -91,12 +103,14 @@ package HushSunHush
 		private var otcolor_lt:uint;
 		
 		/* TODO: Let user control the silence cutoff (which is same as controlling microphone gain) */
-		public static const SILENCE_CUTOFF:Number = 10.0/1024.0;
+		public static const SILENCE_CUTOFF:Number = 50.0/1024.0;
 		
 		public static const M_SAMPLE_RATE:Number = 22050; //Microphone sample rate
 		private var mic:Microphone;
 		private var micTick:int;
 		
+		private var waveTransform:SoundTransform;	
+	
 		public function HushSunHush()
 		{
 			var child:Shape;
@@ -179,6 +193,38 @@ package HushSunHush
 			tickIndicator.y = 100;
 			tickIndicator.graphics.endFill();
 			addChild(tickIndicator);
+		
+			
+			var micTextS:Sprite = new Sprite();
+			addChild(micTextS);
+			var micText:TextField = new TextField();
+			micText.autoSize = TextFieldAutoSize.LEFT;
+			micText.background = false;
+			micText.border = false;
+			
+
+			micText.defaultTextFormat = format;
+			
+			micTextS.addChild(micText);
+			micText.text = "Click below to set microphone level";
+			micTextS.x = MARGIN/2;
+			micTextS.y = HEIGHT-MARGIN-17;
+			
+			micCheck = new Shape();
+			micCheck.graphics.beginFill(TEAL);
+			micCheck.graphics.drawRect(0,0,WIDTH-2*MARGIN,5);
+			micCheck.x = MARGIN;
+			micCheck.y = HEIGHT-MARGIN;
+			micCheck.graphics.endFill();
+			addChild(micCheck);
+			
+			micLevel = new Shape();
+			micLevel.graphics.beginFill(0xdddddd);
+			micLevel.graphics.drawRect(0,0,5,9);
+			micLevel.x = MARGIN + SILENCE_CUTOFF*(WIDTH-2*MARGIN);
+			micLevel.y = HEIGHT-MARGIN-2;
+			micLevel.graphics.endFill();
+			addChild(micLevel);
 			
 			//Be update the screen once per frame
 			tickIndicator.addEventListener(Event.ENTER_FRAME,step);
@@ -191,6 +237,12 @@ package HushSunHush
 			mic.addEventListener( SampleDataEvent.SAMPLE_DATA, onMicSampleData );
 			
 			loadSongs();
+			
+			var theWaveSound: Sound = new WaveSound() as Sound;
+			
+			waveTransform = new SoundTransform(0.0,0);
+			
+			theWaveSound.play(0,20,waveTransform);
 		}
 		
 		public function loadSongs():void
@@ -237,6 +289,8 @@ package HushSunHush
 				windNotes.start = results[i];
 				windNotes.end = results[i+1];
 			}
+			
+			
 		}
 		
 		public function wavesLoaded(event:Event):void
@@ -361,6 +415,8 @@ package HushSunHush
 			tick++; //Keep a count of which frame we are on
 			tick = tick % (FPS*SECPERFRAME*2);
 			
+			
+			
 			var myNotes:HushNote;
 			var otNotes:HushNote;
 			if(whichTeam == 0){
@@ -418,6 +474,13 @@ package HushSunHush
 			
 			total = total/len;
 						
+			micCheck.graphics.clear();
+			micCheck.graphics.beginFill(TEAL);
+			micCheck.graphics.drawRect(0,0,total*(WIDTH-2*MARGIN),5);
+			micCheck.x = MARGIN;
+			micCheck.y = HEIGHT-MARGIN;
+			micCheck.graphics.endFill();
+			
 			if(total > SILENCE_CUTOFF){
 				//We hear something. If no current note, create one.
 				start_note();
