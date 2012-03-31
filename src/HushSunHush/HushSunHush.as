@@ -119,6 +119,8 @@ package HushSunHush
 	
 		private var theWaveArray:ByteArray;
 		private var moddedWaveSound:Sound;
+		private var theWindArray:ByteArray;
+		private var moddedWindSound:Sound;
 		
 		public function HushSunHush()
 		{
@@ -304,12 +306,19 @@ package HushSunHush
 			theWaveArray = new ByteArray();
 			theWaveSound.extract(theWaveArray,(44.100*theWaveSound.length));
 			theWaveArray.position = 0;
-
-			
+		
 			moddedWaveSound = new Sound();
 			moddedWaveSound.addEventListener(SampleDataEvent.SAMPLE_DATA,waveSampler);
 			moddedWaveSound.play();
 			
+			var theWindSound:Sound = new WindSound as Sound;
+			theWindArray = new ByteArray();
+			theWindSound.extract(theWindArray,(44.100*theWindSound.length));
+			theWindArray.position = 0;
+			
+			moddedWindSound = new Sound();
+			moddedWindSound.addEventListener(SampleDataEvent.SAMPLE_DATA,windSampler);
+			moddedWindSound.play();
 		}
 
 		public function is_loud(wtick:int, notes:HushNote):Boolean{
@@ -342,7 +351,32 @@ package HushSunHush
 				}
 				
 				if(!loud){
-					temp = temp * 0.10;
+					temp = temp * 0.50;
+				}
+				event.data.writeFloat(temp);
+				event.data.writeFloat(temp);
+			}
+		}
+		
+		public function windSampler(event:SampleDataEvent):void{	
+			var temp:Number;
+			var whichTick:int = (tick+SOUND_LAG)%MEASURETICKS;
+			var loud:Boolean = is_loud(whichTick,windNotes);
+			
+			//This function only returns 2 ticks of data at a time
+			for ( var c:int=0; c<2*1470; c++ ) {
+				if(theWindArray.bytesAvailable <= 0){
+					theWindArray.position = 0;
+				}
+				temp = theWindArray.readFloat();
+				
+				if(c == 1470){
+					whichTick = whichTick+1;
+					loud = is_loud(whichTick,windNotes);
+				}
+				
+				if(!loud){
+					temp = temp * 0.50;
 				}
 				event.data.writeFloat(temp);
 				event.data.writeFloat(temp);
