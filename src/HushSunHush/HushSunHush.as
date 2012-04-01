@@ -20,6 +20,7 @@ package HushSunHush
 	
 	import flash.display.Shape;
 	import flash.display.Sprite;
+	import flash.display.Bitmap;
 	import flash.events.*;
 	import flash.media.Microphone;
 	import flash.media.Sound;
@@ -40,9 +41,13 @@ package HushSunHush
 		[Embed(source="Waves_v01.mp3")]
 		private static var WaveSound: Class;
 		
+		[Embed(source="babyface.png")]
+		private static var BabyFace: Class;
+		
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Shape;
+		private var babyface:Bitmap;
 		private var noteDisplay:Shape;
 		private var noteGrid:Shape;
 		private var micLevel:Shape;
@@ -168,8 +173,16 @@ package HushSunHush
 			debugTextS.x = WIDTH/2;
 			debugText.text = "";//"Hello, world";
 			
+			babyface = new BabyFace() as Bitmap;
+			babyface.scaleX = 0.5;
+			babyface.scaleY = 0.5;
+			babyface.alpha = 0.75;
+			babyface.x = (WIDTH - babyface.width)/2;
+			babyface.y = (HEIGHT - babyface.height)/2;
+			addChild(babyface);
+			
 			planet = new Shape();
-			planet.graphics.beginFill(0x00aa00,0.5);
+			planet.graphics.beginFill(0x00aa00,0.75);
 			planet.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
 			planet.graphics.endFill();
 			planet.y = HEIGHT/3;
@@ -468,6 +481,7 @@ package HushSunHush
 			globalScore.graphics.endFill();
 			
 			planet.y = 2*HEIGHT/3 - scoreProp*HEIGHT/3;
+			babyface.y = (HEIGHT-babyface.height)/3 + (scoreProp)*(HEIGHT-babyface.height)/3;
 			
 			//debugText.text = "Score: " + results[0] + ", Players" + results[1];
 		}
