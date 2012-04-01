@@ -28,7 +28,7 @@ if (!$con)
 mysql_select_db("kiswhs_hushsunhush", $con);
 
 $score = htmlspecialchars($_GET["score"]);
-if($score == null || $score < 0 && $score > 20){
+if($score == null || $score < 0 || $score > 20){
   $score = 0;
 }
 $team = htmlspecialchars($_GET["team"]);
