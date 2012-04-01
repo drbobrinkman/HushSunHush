@@ -154,6 +154,6 @@ $result = mysql_query($query);
 mysql_close($con);
 
 //If all goes well, check and see if it is time to combine scores
-//include_once "combine_songs.php";
+include_once "combine_songs.php";
 
 ?>
