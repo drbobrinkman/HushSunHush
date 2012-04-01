@@ -86,7 +86,7 @@ package HushSunHush
 			dsp.transform.matrix=matrix;
 		}
 		
-		public function step(){
+		public function step():void{
 			//If we are not visible, do nothing
 			if(alpha < 0.1) return;
 			
@@ -102,7 +102,7 @@ package HushSunHush
 					togo = Math.floor(3*30.0*Math.random()); //Max 3 seconds
 				} else {
 					//First, pick target x
-					var goalX = minX + (maxX-minX-32)*Math.random();
+					var goalX:int = minX + (maxX-minX-32)*Math.random();
 					togo = goalX - x;
 					
 					if(togo < 0) {

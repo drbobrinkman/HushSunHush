@@ -541,7 +541,7 @@ package HushSunHush
 				waveDudes.push(new Worshipper(WIDTH/2 + MARGIN, WIDTH-MARGIN, HEIGHT-HEIGHT/5,HEIGHT-2*MARGIN,1));
 				addChild(waveDudes[waveDudes.length-1]);
 			}
-			var i:int;
+			//var i:int;
 			for(i=0; i<waveDudes.length; i++){
 				if(i < results[2]){
 					waveDudes[i].alpha = 1.0;
@@ -599,8 +599,8 @@ package HushSunHush
 			} 
 		}
 		
-		var v1:Vector.<Boolean>;
-		var v2:Vector.<Boolean>;
+		private var v1:Vector.<Boolean>;
+		private var v2:Vector.<Boolean>;
 		
 		public function match_percentage(notes1:HushNote, notes2:HushNote):Number
 		{
