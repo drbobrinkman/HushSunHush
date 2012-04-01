@@ -35,7 +35,7 @@ package HushSunHush
 	
 	public class HushSunHush extends Sprite
 	{	
-		[Embed(source="Winds_v01.mp3")]
+		[Embed(source="Winds_v02.mp3")]
 		private static var WindSound: Class;
 		
 		[Embed(source="Waves_v02.mp3")]
@@ -397,7 +397,8 @@ package HushSunHush
 		}
 		
 		public function windSampler(event:SampleDataEvent):void{	
-			var temp:Number;
+			var temp1:Number;
+			var temp2:Number;
 			var whichTick:int = (tick+SOUND_LAG)%MEASURETICKS;
 			var loud:Boolean = is_loud(whichTick,windNotes);
 			
@@ -406,7 +407,11 @@ package HushSunHush
 				if(theWindArray.bytesAvailable <= 0){
 					theWindArray.position = 0;
 				}
-				temp = theWindArray.readFloat();
+				temp1 = theWindArray.readFloat();
+				if(theWindArray.bytesAvailable <= 0){
+					theWindArray.position = 0;
+				}
+				temp2 = theWindArray.readFloat();
 				
 				if(c == 1470){
 					whichTick = whichTick+1;
@@ -414,10 +419,11 @@ package HushSunHush
 				}
 				
 				if(!loud){
-					temp = temp * 0.50;
+					temp1 = temp1 * 0.50;
+					temp2 = temp2 * 0.50;
 				}
-				event.data.writeFloat(temp);
-				event.data.writeFloat(temp);
+				event.data.writeFloat(temp1);
+				event.data.writeFloat(temp2);
 			}
 		}
 		
