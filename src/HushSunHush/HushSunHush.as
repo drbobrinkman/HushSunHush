@@ -467,6 +467,8 @@ package HushSunHush
 			globalScore.graphics.drawRect(0,0,scoreProp*(WIDTH-2*MARGIN),13);
 			globalScore.graphics.endFill();
 			
+			planet.y = 2*HEIGHT/3 - scoreProp*HEIGHT/3;
+			
 			//debugText.text = "Score: " + results[0] + ", Players" + results[1];
 		}
 		
