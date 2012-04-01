@@ -18,9 +18,9 @@ package HushSunHush
 {
 	import __AS3__.vec.Vector;
 	
+	import flash.display.Bitmap;
 	import flash.display.Shape;
 	import flash.display.Sprite;
-	import flash.display.Bitmap;
 	import flash.events.*;
 	import flash.media.Microphone;
 	import flash.media.Sound;
@@ -44,10 +44,15 @@ package HushSunHush
 		[Embed(source="babyface.png")]
 		private static var BabyFace: Class;
 		
+		[Embed(source="Sunbeam.png")]
+		private static var Sunbeam: Class;
+		
+		
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Shape;
 		private var babyface:Bitmap;
+		private var sunbeam:Bitmap;
 		private var noteDisplay:Shape;
 		private var noteGrid:Shape;
 		private var micLevel:Shape;
@@ -187,6 +192,14 @@ package HushSunHush
 			planet.graphics.endFill();
 			planet.y = HEIGHT/3;
 			addChild(planet);
+			
+			sunbeam = new Sunbeam() as Bitmap;
+			sunbeam.scaleX = 1.0;
+			sunbeam.scaleY = 1.0;
+			sunbeam.alpha = 0.50;
+			sunbeam.x = 0;
+			sunbeam.y = (HEIGHT-sunbeam.height)/2;
+			addChild(sunbeam);
 			
 			noteDisplay = new Shape();
 			noteDisplay.x = MARGIN;
@@ -481,8 +494,15 @@ package HushSunHush
 			globalScore.graphics.endFill();
 			
 			planet.y = 2*HEIGHT/3 - scoreProp*HEIGHT/3;
-			babyface.y = (HEIGHT-babyface.height)/3 + (scoreProp)*(HEIGHT-babyface.height)/3;
+			babyface.y = (HEIGHT-babyface.height)/2 + (scoreProp)*(HEIGHT)/3;
+			sunbeam.y = (HEIGHT-sunbeam.height)/2 + (scoreProp)*(HEIGHT)/3;
 			
+			/* MAX_SCORE/4 is 0 alpha, 3*MAX_SCORE/4 is 1.0 alpha
+			 */
+			var tempA:Number = (results[0]-(MAX_SCORE/4))/(MAX_SCORE/2);
+			if(tempA > 1.0) tempA = 1.0;
+			if(tempA < 0.0) tempA = 0.0;
+			sunbeam.alpha = 1.0-tempA;
 			//debugText.text = "Score: " + results[0] + ", Players" + results[1];
 		}
 		
