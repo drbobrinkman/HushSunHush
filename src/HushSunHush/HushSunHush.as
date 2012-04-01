@@ -437,6 +437,25 @@ package HushSunHush
 			}
 		}
 		
+		public function postScore(pscore:int):void
+		{
+			var variables:URLVariables = new URLVariables();
+			variables.score = pscore;
+			variables.team = whichTeam;
+			
+			var request:URLRequest = new URLRequest("http://hushsunhush.com/put_score.php");
+			request.method = URLRequestMethod.GET;
+			request.data = variables;
+			
+			var scorePoster:URLLoader = new URLLoader();
+			
+			try {
+				scorePoster.load(request);
+			} catch (error:Error) {
+				trace("Unable to load requested document.");
+			}
+		}
+		
 		public function scoreLoaded(event:Event):void
 		{
 			var l:URLLoader = URLLoader(event.target);
@@ -590,6 +609,7 @@ package HushSunHush
 			} else {
 				current_score = (thisScore + current_score)/2.0;
 			}
+			postScore(current_score);
 			
 			yourScore.graphics.clear();
 			yourScore.graphics.beginFill(TEAL);
@@ -628,6 +648,8 @@ package HushSunHush
 				
 				prevNotes = curNotes;
 				curNotes = null;
+				
+				loadScore();
 			}
 			
 			//Update the position of the beat indicator
