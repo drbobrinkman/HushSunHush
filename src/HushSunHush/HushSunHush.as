@@ -132,6 +132,9 @@ package HushSunHush
 		private var theWindArray:ByteArray;
 		private var moddedWindSound:Sound;
 		
+		private var windDudes:Vector.<Worshipper>;
+		private var waveDudes:Vector.<Worshipper>;
+		
 		public function HushSunHush()
 		{
 			var child:Shape;
@@ -199,7 +202,7 @@ package HushSunHush
 			sunbeam.alpha = 0.50;
 			sunbeam.x = 0;
 			sunbeam.y = (HEIGHT-sunbeam.height)/2;
-			addChild(sunbeam);
+			addChild(sunbeam);	
 			
 			noteDisplay = new Shape();
 			noteDisplay.x = MARGIN;
@@ -345,6 +348,9 @@ package HushSunHush
 			moddedWindSound = new Sound();
 			moddedWindSound.addEventListener(SampleDataEvent.SAMPLE_DATA,windSampler);
 			moddedWindSound.play();
+			
+			windDudes = new Vector.<Worshipper>();
+			waveDudes = new Vector.<Worshipper>();
 		}
 
 		public function is_loud(wtick:int, notes:HushNote):Boolean{
@@ -504,6 +510,33 @@ package HushSunHush
 			if(tempA < 0.0) tempA = 0.0;
 			sunbeam.alpha = 1.0-tempA;
 			//debugText.text = "Score: " + results[0] + ", Players" + results[1];
+			
+			//results[1] is wind players, results[2] is wave players
+			while(results[1] > windDudes.length){
+				windDudes.push(new Worshipper(MARGIN,WIDTH/2 - MARGIN,HEIGHT-HEIGHT/5,HEIGHT-2*MARGIN,0));
+				addChild(windDudes[windDudes.length-1]);
+			}
+			var i:int;
+			for(i=0; i<windDudes.length; i++){
+				if(i < results[1]){
+					windDudes[i].alpha = 1.0;
+				} else {
+					windDudes[i].alpha = 0.0;
+				}
+			}
+			
+			while(results[2] > waveDudes.length){
+				waveDudes.push(new Worshipper(WIDTH/2 + MARGIN, WIDTH-MARGIN, HEIGHT-HEIGHT/5,HEIGHT-2*MARGIN,1));
+				addChild(waveDudes[waveDudes.length-1]);
+			}
+			var i:int;
+			for(i=0; i<waveDudes.length; i++){
+				if(i < results[1]){
+					waveDudes[i].alpha = 1.0;
+				} else {
+					waveDudes[i].alpha = 0.0;
+				}
+			}
 		}
 		
 		public function windLoaded(event:Event):void
