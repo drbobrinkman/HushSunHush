@@ -47,12 +47,16 @@ package HushSunHush
 		[Embed(source="Sunbeam.png")]
 		private static var Sunbeam: Class;
 		
+		[Embed(source="Islands.png")]
+		private static var Islands: Class;
 		
 		private var tick:int=0;
 		private var tickIndicator:Shape;
-		private var planet:Shape;
+		private var planet:Sprite;
+		private var planetWater:Shape;
 		private var babyface:Bitmap;
 		private var sunbeam:Bitmap;
+		private var islands:Bitmap;
 		private var noteDisplay:Shape;
 		private var noteGrid:Shape;
 		private var micLevel:Shape;
@@ -81,6 +85,7 @@ package HushSunHush
 		public static const SECPERFRAME:Number = 6;
 		public static const MEASURETICKS:Number = SECPERFRAME*FPS;
 		public static const SCREENTICKS:Number = MEASURETICKS*2;
+		public static const TITLEHEIGHT:Number = 36*1.5;
 		
 		public static const WIDTH:Number = 800;
 		public static const HEIGHT:Number = 450;
@@ -166,8 +171,6 @@ package HushSunHush
 			addChild(debugTextS);
 			debugText = new TextField();
 			debugText.autoSize = TextFieldAutoSize.LEFT;
-			debugText.background = false;
-			debugText.border = true;
 			
 			var format:TextFormat = new TextFormat();
 			format.font = "Verdana";
@@ -181,6 +184,33 @@ package HushSunHush
 			debugTextS.x = WIDTH/2;
 			debugText.text = "";//"Hello, world";
 			
+			
+			
+			var titleTextS:Sprite = new Sprite();
+			
+			var titleText:TextField = new TextField();
+			titleText.autoSize = TextFieldAutoSize.NONE;
+			titleText.background = false;
+			
+			var tformat:TextFormat = new TextFormat();
+			tformat.font = "Verdana";
+			tformat.color = 0xFFFFFF;
+			tformat.size = 36;
+			tformat.bold = true;
+			tformat.italic = true;
+			tformat.align = flash.text.TextFormatAlign.CENTER;
+			titleText.defaultTextFormat = tformat;
+			titleText.width = WIDTH;
+			titleText.height = 36*1.5;
+			
+			titleTextS.addChild(titleText);
+			titleTextS.y = MARGIN/2;
+			titleTextS.x = 0;
+			titleText.text = "Hush, sun, hush";//"Hello, world";
+
+			
+			
+			
 			babyface = new BabyFace() as Bitmap;
 			babyface.scaleX = 0.5;
 			babyface.scaleY = 0.5;
@@ -189,24 +219,30 @@ package HushSunHush
 			babyface.y = (HEIGHT - babyface.height)/2;
 			addChild(babyface);
 			
-			planet = new Shape();
-			planet.graphics.beginFill(WAVECOLOR_md,0.85);
-			planet.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
-			planet.graphics.endFill();
-			planet.y = HEIGHT/3;
-			addChild(planet);
-			
 			sunbeam = new Sunbeam() as Bitmap;
 			sunbeam.scaleX = 1.0;
 			sunbeam.scaleY = 1.0;
 			sunbeam.alpha = 0.50;
 			sunbeam.x = 0;
 			sunbeam.y = (HEIGHT-sunbeam.height)/2;
-			addChild(sunbeam);	
+			addChild(sunbeam);
+			
+			planet = new Sprite();
+			planetWater = new Shape();
+			planetWater.graphics.beginFill(WAVECOLOR_md,0.85);
+			planetWater.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
+			planetWater.graphics.endFill();
+			islands = new Islands() as Bitmap;
+			islands.y = -15;
+			
+			planet.y = HEIGHT/3;
+			planet.addChild(planetWater);
+			planet.addChild(islands);
+			addChild(planet);
 			
 			noteDisplay = new Shape();
 			noteDisplay.x = MARGIN;
-			noteDisplay.y = 100+MARGIN;
+			noteDisplay.y = 100+MARGIN+TITLEHEIGHT;
 			addChild(noteDisplay);
 			
 			noteGrid = new Shape();
@@ -225,7 +261,7 @@ package HushSunHush
 			}
 			
 			noteGrid.x = MARGIN;
-			noteGrid.y = 100;
+			noteGrid.y = 100+TITLEHEIGHT;
 			addChild(noteGrid);
 			
 			//Indicator of where we are in the measure(s)
@@ -234,7 +270,7 @@ package HushSunHush
 			tickIndicator.graphics.lineStyle(1,0x20ff00);
 			tickIndicator.graphics.drawRect(0,0,1,35+2*MARGIN);
 			tickIndicator.x = MARGIN;
-			tickIndicator.y = 100;
+			tickIndicator.y = 100+TITLEHEIGHT;
 			tickIndicator.graphics.endFill();
 			addChild(tickIndicator);
 		
@@ -295,13 +331,13 @@ package HushSunHush
 			gsTextS.addChild(gsText);
 			gsText.text = "Worldwide total soothing praise:";
 			gsTextS.x = MARGIN/2;
-			gsTextS.y = MARGIN;
+			gsTextS.y = MARGIN+TITLEHEIGHT;
 			
 			globalScore = new Shape();
 			globalScore.graphics.beginFill(TEAL);
 			globalScore.graphics.drawRect(0,0,0.25*(WIDTH-2*MARGIN),13);
 			globalScore.x = MARGIN;
-			globalScore.y = MARGIN+17;
+			globalScore.y = MARGIN+17+TITLEHEIGHT;
 			globalScore.graphics.endFill();
 			addChild(globalScore);
 			
@@ -318,15 +354,24 @@ package HushSunHush
 			ysTextS.addChild(ysText);
 			ysText.text = "Your soothing praise:";
 			ysTextS.x = MARGIN/2;
-			ysTextS.y = MARGIN+17+17;
+			ysTextS.y = MARGIN+17+17+TITLEHEIGHT;
 			
 			yourScore = new Shape();
 			yourScore.graphics.beginFill(TEAL);
 			yourScore.graphics.drawRect(0,0,0.125*(WIDTH-2*MARGIN),5);
 			yourScore.x = MARGIN;
-			yourScore.y = MARGIN+17+17+17;
+			yourScore.y = MARGIN+17+17+17+TITLEHEIGHT;
 			yourScore.graphics.endFill();
 			addChild(yourScore);
+			
+			
+			var titleBG:Shape = new Shape();
+			titleBG.graphics.beginFill(SKYCOLOR,0.8);
+			titleBG.graphics.drawRect(0,0,WIDTH,36*1.5);
+			titleBG.graphics.endFill();
+			titleBG.y = MARGIN/2;
+			addChild(titleBG);
+			addChild(titleTextS);
 			
 			loadSongs();
 			loadScore();
