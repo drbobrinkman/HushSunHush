@@ -500,6 +500,78 @@ package HushSunHush
 			}
 		}
 		
+		public function postSong(notes:HushNote):void
+		{
+			var variables:URLVariables = new URLVariables();
+			variables.channel = whichTeam;
+			
+			var notecount:int = 0;
+			
+			//This is an abomination, but I don't have time to 
+			// refactor.
+			if(notes != null){
+				variables.note1_start = notes.start;
+				variables.note1_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note2_start = notes.start;
+				variables.note2_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note3_start = notes.start;
+				variables.note3_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note4_start = notes.start;
+				variables.note4_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note5_start = notes.start;
+				variables.note5_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note6_start = notes.start;
+				variables.note6_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note7_start = notes.start;
+				variables.note7_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			if(notes != null){
+				variables.note8_start = notes.start;
+				variables.note8_end = notes.end;
+				notes = notes.prev;
+				notecount++;
+			}
+			variables.num_notes = notecount;
+			
+			var request:URLRequest = new URLRequest("http://hushsunhush.com/put_song.php");
+			request.method = URLRequestMethod.GET;
+			request.data = variables;
+			
+			var songPoster:URLLoader = new URLLoader();
+			
+			try {
+				songPoster.load(request);
+			} catch (error:Error) {
+				trace("Unable to load requested document.");
+			}
+		}
+		
 		public function scoreLoaded(event:Event):void
 		{
 			var l:URLLoader = URLLoader(event.target);
@@ -726,11 +798,13 @@ package HushSunHush
 				}
 
 				scoreNotes(curNotes,prevNotes,myNotes);
+				postSong(curNotes);
 				
 				prevNotes = curNotes;
 				curNotes = null;
 				
 				loadScore();
+				loadSongs();
 			}
 			
 			//Update the position of the beat indicator
