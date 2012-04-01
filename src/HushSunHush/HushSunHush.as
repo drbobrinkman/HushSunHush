@@ -190,7 +190,7 @@ package HushSunHush
 			addChild(babyface);
 			
 			planet = new Shape();
-			planet.graphics.beginFill(0x00aa00,0.75);
+			planet.graphics.beginFill(WAVECOLOR_md,0.85);
 			planet.graphics.drawCircle(WIDTH/2,HEIGHT*3,HEIGHT*3);
 			planet.graphics.endFill();
 			planet.y = HEIGHT/3;
@@ -531,7 +531,7 @@ package HushSunHush
 			}
 			var i:int;
 			for(i=0; i<waveDudes.length; i++){
-				if(i < results[1]){
+				if(i < results[2]){
 					waveDudes[i].alpha = 1.0;
 				} else {
 					waveDudes[i].alpha = 0.0;
@@ -737,6 +737,14 @@ package HushSunHush
 			
 			draw_notes(noteDisplay,otNotes,otcolor_dk,tick/MEASURETICKS,28);
 			draw_notes(noteDisplay,otNotes,otcolor_dk,1-Math.floor(tick/MEASURETICKS),28);
+			
+			var i:int;
+			for(i=0;i<windDudes.length;i++){
+				windDudes[i].step();
+			}
+			for(i=0;i<waveDudes.length;i++){
+				waveDudes[i].step();
+			}
 		}
 		
 		public function onMicSampleData( event:SampleDataEvent ):void
