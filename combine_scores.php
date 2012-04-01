@@ -71,7 +71,9 @@ if(flock($fp, LOCK_EX | LOCK_NB)) {
 	}
       }
     
-    mysql_query("INSERT INTO Score (score, num_players_wind, num_players_wave) VALUES ($score, $count_0, $count_1)");
+    if($score > 0){
+      mysql_query("INSERT INTO Score (score, num_players_wind, num_players_wave) VALUES ($score, $count_0, $count_1)");
+    }
     mysql_query("DELETE FROM Score_contrib WHERE id <= $max_id");
 
     mysql_close($con);
