@@ -50,6 +50,9 @@ package HushSunHush
 		[Embed(source="Islands.png")]
 		private static var Islands: Class;
 		
+		[Embed(source="tutorial.png")]
+		private static var Tutorial: Class;
+		
 		private var tick:int=0;
 		private var tickIndicator:Shape;
 		private var planet:Sprite;
@@ -57,6 +60,8 @@ package HushSunHush
 		private var babyface:Bitmap;
 		private var sunbeam:Bitmap;
 		private var islands:Bitmap;
+		private var tutorial:Bitmap;
+		private var tutS:Shape;
 		private var noteDisplay:Shape;
 		private var noteGrid:Shape;
 		private var micLevel:Shape;
@@ -64,6 +69,8 @@ package HushSunHush
 		
 		private var globalScore:Shape;
 		private var yourScore:Shape;
+		
+		private var prevScore:Number = -1;
 		
 		private var whichTeam:int=0;
 		
@@ -373,6 +380,17 @@ package HushSunHush
 			addChild(titleBG);
 			addChild(titleTextS);
 			
+			tutS = new Shape();
+			tutS.graphics.beginFill(0x000000);
+			tutS.graphics.drawRect(0,0,WIDTH,HEIGHT);
+			tutS.graphics.endFill();
+			tutS.alpha = 0.75;
+			addChild(tutS);
+			
+			tutorial = new Tutorial() as Bitmap;
+			tutorial.alpha = 0.75;
+			addChild(tutorial);
+			
 			loadSongs();
 			loadScore();
 			
@@ -622,9 +640,15 @@ package HushSunHush
 			var l:URLLoader = URLLoader(event.target);
 			var results:Array = l.data.split(" ");
 			
+			if(prevScore < 0){
+				prevScore = Number(results[0]);
+			} else {
+				prevScore = (2*prevScore + Number(results[0]))/3;
+			}
+			
 			globalScore.graphics.clear();
 			globalScore.graphics.beginFill(TEAL);
-			var scoreProp:Number = results[0]/MAX_SCORE;
+			var scoreProp:Number = prevScore/MAX_SCORE;
 			globalScore.graphics.drawRect(0,0,scoreProp*(WIDTH-2*MARGIN),13);
 			globalScore.graphics.endFill();
 			
@@ -634,7 +658,7 @@ package HushSunHush
 			
 			/* MAX_SCORE/4 is 0 alpha, 3*MAX_SCORE/4 is 1.0 alpha
 			 */
-			var tempA:Number = (results[0]-(MAX_SCORE/4))/(MAX_SCORE/2);
+			var tempA:Number = (prevScore-(MAX_SCORE/4))/(MAX_SCORE/2);
 			if(tempA > 1.0) tempA = 1.0;
 			if(tempA < 0.0) tempA = 0.0;
 			sunbeam.alpha = 1.0-tempA;
@@ -822,7 +846,10 @@ package HushSunHush
 			tick++; //Keep a count of which frame we are on
 			tick = tick % (FPS*SECPERFRAME*2);
 			
-			
+			if(tick%(2*MEASURETICKS) == 0){
+				tutorial.alpha = 0;
+				tutS.alpha = 0;
+			}
 			
 			var myNotes:HushNote;
 			var otNotes:HushNote;
